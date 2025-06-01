@@ -5,17 +5,22 @@ import torch
 import torch.nn.functional as F
 
 from PDESetting import save_config
-from PDESetting import heatEquationSetting
-from PDEsolvers import PDEsolver, adjoint_PDEsolver
+from PDESetting import PDESetting
+from PDESolvers import PDEsolver, adjoint_PDEsolver
 from NNPDEML import loss, NN, trainNNPDE, baseline_computation
 
-from plotting import plot_PDEsolution, plot_PDEsourceterm, plot_PDEsolutions, plot_PDEsourceterms, plot_PDEall
+from auxiliary.plotting import plot_PDEsolution, plot_PDEsourceterm, plot_PDEsolutions, plot_PDEsourceterms, plot_PDEall
 
 # GPU support
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+#### Heat equation with NN source term
 
-setting = heatEquationSetting()
+### Setting of the problem
+PDE_name = 'HeatEquation'  # 'HeatEquation' or 'AllenCahnEquation'
+g_target_name = 'difficult'  # "linear_t", "linear_x", "linear_y", "quadratic_t", "quadratic_x", "tanh_1", "tanh_2", "tanh_5", "difficult"
+
+setting = PDESetting(PDE_name, g_target_name)
 
 
 

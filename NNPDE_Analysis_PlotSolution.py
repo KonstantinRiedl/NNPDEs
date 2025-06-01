@@ -14,7 +14,7 @@ from NNPDEML import NN
 
 from PDESetting import PDESetting
 
-from plotting import plot_PDEsourceterm, plot_PDEsolution, plot_PDEadjoint, plot_PDEsourceterms, plot_PDEsolutions, plot_PDEall
+from auxiliary.plotting import plot_PDEsourceterm, plot_PDEsolution, plot_PDEadjoint, plot_PDEsourceterms, plot_PDEsolutions, plot_PDEall
 
 ### Setting
 PDE_name = "HeatEquation"  # "HeatEquation" or "AllenCahnEquation"
@@ -73,8 +73,37 @@ plot_PDEall(
     title=runnumber+f'/best_beta{beta}_N{N}'
 )
 
-# plot_PDEadjoint(
-#     uhat,
-#     save_plot=True,
-#     title=runnumber+f'/best_beta{beta}_N{N}'
-# )
+plot_PDEsolution(
+    setting["h"],
+    N = None,
+    save_plot=True,
+    title=runnumber+f'/best_beta{beta}_N{N}'
+)
+
+plot_PDEsourceterm(
+    setting["g_target_eval"],
+    N = None,
+    save_plot=True,
+    title=runnumber+f'/best_beta{beta}_N{N}'
+)
+
+plot_PDEsolution(
+    u,
+    N = N,
+    save_plot=True,
+    title=runnumber+f'/best_beta{beta}_N{N}'
+)
+
+plot_PDEsourceterm(
+    g(setting["meshgrid_flatten"]).reshape(setting["tt"].shape),
+    N = N,
+    save_plot=True,
+    title=runnumber+f'/best_beta{beta}_N{N}'
+)
+
+plot_PDEadjoint(
+    uhat,
+    N = N,
+    save_plot=True,
+    title=runnumber+f'/best_beta{beta}_N{N}'
+)

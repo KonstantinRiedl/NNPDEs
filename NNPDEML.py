@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from PDEsolvers import PDEsolver, adjoint_PDEsolver
+from PDESolvers import PDEsolver, adjoint_PDEsolver
 
 
 ### NN setting
@@ -227,7 +227,7 @@ def trainNNPDE(g, num_epochs, setting, optimizer_config, scheduler_config, devic
         g_eval.backward(uhat*dx*dy*dt)
 
         ## gradient clipping
-        clipping = True
+        clipping = False
         if clipping:
             
             # allow for warm-up phase
@@ -258,7 +258,7 @@ def trainNNPDE(g, num_epochs, setting, optimizer_config, scheduler_config, devic
         optimizer.step()
 
         # gradually decrease scheduler patience
-        patience_decay = True
+        patience_decay = False
         if patience_decay:
             if hasattr(scheduler, 'patience'):
                 min_patience = 0

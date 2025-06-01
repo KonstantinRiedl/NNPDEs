@@ -5,7 +5,7 @@ import numpy as np
 
 import torch
 
-from PDEsolvers import PDEsolver, adjoint_PDEsolver
+from PDESolvers import PDEsolver, adjoint_PDEsolver
 
 ### utility functions
 def extract_lambda_source(fn):

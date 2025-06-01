@@ -3,7 +3,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-def plot_PDEsolution(u, save_plot, title):
+def plot_PDEsolution(u, N, save_plot, title):
     
     # Create the directory to save plots if it doesn't exist
     plot_dir = os.path.join(title)
@@ -14,9 +14,11 @@ def plot_PDEsolution(u, save_plot, title):
     for n in np.arange(0, nt, min(nt, int(nt/200)+1)):
         plt.imshow(u.detach().numpy()[n, :, :], cmap='viridis', origin='lower')
         plt.colorbar()
-        plt.title(r"TITLE TO BE CHOSEN MANUALLY")
-        #plt.title(rf"Solution $u^N_{{\theta}}$ for $N={N}$ neurons")
-        #plt.title(r"Target data $h$")
+        if N is None:
+            plt.title(r"Target data $h$")
+        else:
+            plt.title(rf"Solution $u^N_{{\theta}}$ for $N={N}$ neurons")
+        
         plt.clim(vmin=u.min().item(), vmax=u.max().item())
         # Save the plot with the respective n
         if save_plot:
@@ -25,7 +27,10 @@ def plot_PDEsolution(u, save_plot, title):
 
     # Save a video of the plots using ffmpeg
     if save_plot:
-        video_path = os.path.join(plot_dir, f"{'video_solution'}.mp4")
+        if N is None:
+            video_path = os.path.join(plot_dir, f"{'videoTargetSolution'}.mp4")
+        else:
+            video_path = os.path.join(plot_dir, f"{'videoSolution'}.mp4")
         os.system(f"ffmpeg -y -loglevel quiet -framerate 10 -i {os.path.join(plot_dir, 'plot_%04d.png')} -c:v libx264 -pix_fmt yuv420p {video_path}")
 
         # Remove all images used for the video
@@ -33,7 +38,7 @@ def plot_PDEsolution(u, save_plot, title):
             if file_name.startswith("plot_") and file_name.endswith(".png"):
                 os.remove(os.path.join(plot_dir, file_name))
 
-def plot_PDEadjoint(uhat, save_plot, title):
+def plot_PDEadjoint(uhat, N, save_plot, title):
     
     # Create the directory to save plots if it doesn't exist
     plot_dir = os.path.join(title)
@@ -44,9 +49,10 @@ def plot_PDEadjoint(uhat, save_plot, title):
     for n in np.arange(0, nt, min(nt, int(nt/200)+1)):
         plt.imshow(uhat.detach().numpy()[n, :, :], cmap='viridis', origin='lower')
         plt.colorbar()
-        plt.title(r"TITLE TO BE CHOSEN MANUALLY")
-        #plt.title(rf"Adjoint $\widehat{u}^N_{{\theta}}$ for $N={N}$ neurons")
-        #plt.title(r"Target adjoint $0$")
+        if N is None:
+            plt.title(r"Target adjoint $0$")
+        else:
+            plt.title(rf"Adjoint $\widehat{{u}}^N_{{\theta}}$ for $N={N}$ neurons")
         plt.clim(vmin=uhat.min().item(), vmax=uhat.max().item())
         # Save the plot with the respective n
         if save_plot:
@@ -55,7 +61,10 @@ def plot_PDEadjoint(uhat, save_plot, title):
 
     # Save a video of the plots using ffmpeg
     if save_plot:
-        video_path = os.path.join(plot_dir, f"{'video_adjoint'}.mp4")
+        if N is None:
+            video_path = os.path.join(plot_dir, f"{'videoTargetAdjoint'}.mp4")
+        else:
+            video_path = os.path.join(plot_dir, f"{'videoAdjoint'}.mp4")
         os.system(f"ffmpeg -y -loglevel quiet -framerate 10 -i {os.path.join(plot_dir, 'plot_%04d.png')} -c:v libx264 -pix_fmt yuv420p {video_path}")
 
         # Remove all images used for the video
@@ -74,10 +83,11 @@ def plot_PDEsourceterm(g, N, save_plot, title):
     for n in np.arange(0, nt, min(nt, int(nt/200)+1)):
         plt.imshow(g.detach().numpy()[n, :, :], cmap='viridis', origin='lower')
         plt.colorbar()
-        plt.title(r"TITLE TO BE CHOSEN MANUALLY")
-        #plt.title(rf"Source term $g^N_{{\theta}}$ for $N={N}$ neurons")
-        #plt.title(r"Target data $h$")
         plt.clim(vmin=g.min().item(), vmax=g.max().item())
+        if N is None:
+            plt.title(r"Target source term $g_{\text{target}}$")
+        else:
+            plt.title(rf"Source term $g^N_{{\theta}}$ for $N={N}$ neurons")
         # Save the plot with the respective n
         if save_plot:
             plt.savefig(os.path.join(plot_dir, f"plot_{str(n).zfill(4)}.png"))
@@ -85,7 +95,10 @@ def plot_PDEsourceterm(g, N, save_plot, title):
 
     # Save a video of the plots using ffmpeg
     if save_plot:
-        video_path = os.path.join(plot_dir, f"{'video_sourceterm'}.mp4")
+        if N is None:
+            video_path = os.path.join(plot_dir, f"{'videoTarget_Sourceterm'}.mp4")
+        else:
+            video_path = os.path.join(plot_dir, f"{'videoSourceterm'}.mp4")
         os.system(f"ffmpeg -y -loglevel quiet -framerate 10 -i {os.path.join(plot_dir, 'plot_%04d.png')} -c:v libx264 -pix_fmt yuv420p {video_path}")
 
         # Remove all images used for the video

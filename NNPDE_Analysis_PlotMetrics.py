@@ -10,6 +10,9 @@ import torch
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+save_plot = False
+
 ### Setting
 PDE_name = "HeatEquation"  # "HeatEquation" or "AllenCahnEquation"
 
@@ -189,7 +192,7 @@ for jj, j in enumerate(beta):
         if PLOT_SETTING == 'pickOne':
             sns.lineplot(
                     x=epochs[:num_epochs_plot:skip],
-                    y=sqrt_rel_mean_loss_history[1, jj, kk, :num_epochs_plot:skip],
+                    y=sqrt_rel_mean_loss_history[0, jj, kk, :num_epochs_plot:skip],
                     color=color,
                     alpha=1,
                     label=label,
@@ -238,7 +241,7 @@ for jj, j in enumerate(beta):
                 )
                 sns.lineplot(
                     x=epochs[:num_epochs_plot:skip],
-                    y=0.03*lr_history_TABLE[0, jj, kk, :num_epochs_plot:skip, i].squeeze(),
+                    y=lr_history_TABLE[0, jj, kk, :num_epochs_plot:skip, i].squeeze(),
                     color=color,
                     linestyle=':',
                     alpha=0.5
@@ -247,21 +250,26 @@ for jj, j in enumerate(beta):
 plt.xlabel("epoch")
 plt.ylabel("relative RMSE")
 plt.yscale("log")
-#plt.gca().set_ylim(top=1e-1)
-# if PDE_name == "HeatEquation":
-#     plt.gca().set_ylim(bottom=5e-4)
-# elif PDE_name == "AllenCahnEquation":
-#     plt.gca().set_ylim(bottom=1e-3)
+plt.gca().set_ylim(top=1e-1)
+if PDE_name == "HeatEquation":
+    plt.gca().set_ylim(bottom=5e-4)
+elif PDE_name == "AllenCahnEquation":
+    plt.gca().set_ylim(bottom=1e-3)
 plt.grid(True)
 plt.tight_layout()
 plt.legend(ncol=4, loc='upper right', frameon=True)
-plt.show()
+
+# Save (as pdf and png) or show the plot
+if save_plot:
+    output_dir = os.path.join(runnumber)
+    os.makedirs(output_dir, exist_ok=True)
+    if PLOT_SETTING == 'compare':
+        plt.savefig(os.path.join(output_dir, "relative_RMSE_plot.pdf"), format="pdf")
+        plt.savefig(os.path.join(output_dir, "relative_RMSE_plot.png"), format="png", dpi=300)
+    elif PLOT_SETTING == 'pickOne':
+        plt.savefig(os.path.join(output_dir, f"relative_RMSE_plot_fixedN{selected_N[0]}.pdf"), format="pdf")
+        plt.savefig(os.path.join(output_dir, f"relative_RMSE_plot_fixedN{selected_N[0]}.png"), format="png", dpi=300)
+else:
+    plt.show()
 
 
-# # Save the plot as a PDF
-# output_dir = os.path.join(runnumber)
-# os.makedirs(output_dir, exist_ok=True)
-# if PLOT_SETTING == 0:
-#     plt.savefig(os.path.join(output_dir, "relative_RMSE_plot.pdf"), format="pdf")
-# elif PLOT_SETTING == 1:
-#     plt.savefig(os.path.join(output_dir, f"relative_RMSE_plot_fixedN{selected_N[0]}.pdf"), format="pdf")

@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 
 from PDESetting import PDESetting, save_config
-from PDEsolvers import PDEsolver, adjoint_PDEsolver
+from PDESolvers import PDEsolver, adjoint_PDEsolver
 from NNPDEML import NN, trainNNPDE, loss, trainBaseline
 
 # GPU support
@@ -142,7 +142,7 @@ for j, beta_ in enumerate(beta):
             g = NN(input_dim, hidden_dim, output_dim, beta_).to(device)
 
             ## NN for baseline
-            g_baseline = NN(input_dim, hidden_dim, output_dim, beta_)
+            g_baseline = NN(input_dim, hidden_dim, output_dim, beta_).to(device)
             g_baseline.load_state_dict(g.state_dict())  # create a copy of g with the same parameters
 
             ## optimizer and scheduler setting
@@ -155,58 +155,58 @@ for j, beta_ in enumerate(beta):
             }
 
             ## NNPDE training
-            # logger, optimizer, scheduler = trainNNPDE(g,
-            #                     num_epochs=num_epochs, setting=setting,
-            #                     optimizer_config=optimizer_config_run,
-            #                     scheduler_config=scheduler_config,
-            #                     device=device)
+            logger, optimizer, scheduler = trainNNPDE(g,
+                                num_epochs=num_epochs, setting=setting,
+                                optimizer_config=optimizer_config_run,
+                                scheduler_config=scheduler_config,
+                                device=device)
 
-            # loss_history_TABLE[0,j,k,:,i] = torch.tensor(logger.loss)
-            # rel_loss_history_TABLE[0,j,k,:,i] = torch.tensor(logger.rel_loss)
-            # max_error_history_TABLE[0,j,k,:,i] = torch.tensor(logger.max_error)
-            # rel_max_error_history_TABLE[0,j,k,:,i] = torch.tensor(logger.rel_max_error)
-            # grad_norm_history_TABLE[0,j,k,:,i] = torch.tensor(logger.grad_norm)
-            # adjoint_norm_history_TABLE[0,j,k,:,i] = torch.tensor(logger.adjoint_norm)
-            # lr_history_TABLE[0,j,k,:,i] = torch.tensor(logger.scaled_lr)
-            # best_loss_history_TABLE[0,j,k,:,i] = torch.tensor(logger.best_loss)
+            loss_history_TABLE[0,j,k,:,i] = torch.tensor(logger.loss)
+            rel_loss_history_TABLE[0,j,k,:,i] = torch.tensor(logger.rel_loss)
+            max_error_history_TABLE[0,j,k,:,i] = torch.tensor(logger.max_error)
+            rel_max_error_history_TABLE[0,j,k,:,i] = torch.tensor(logger.rel_max_error)
+            grad_norm_history_TABLE[0,j,k,:,i] = torch.tensor(logger.grad_norm)
+            adjoint_norm_history_TABLE[0,j,k,:,i] = torch.tensor(logger.adjoint_norm)
+            lr_history_TABLE[0,j,k,:,i] = torch.tensor(logger.scaled_lr)
+            best_loss_history_TABLE[0,j,k,:,i] = torch.tensor(logger.best_loss)
 
             
-            # # save the best model state
-            # key = (beta_, N_)
-            # current_loss = logger.loss[-1]  # final loss value of the run
+            # save the best model state
+            key = (beta_, N_)
+            current_loss = logger.loss[-1]  # final loss value of the run
 
-            # if key not in best_results or current_loss < best_results[key]['loss']:
-            #     # recompute solution with best model
-            #     g.load_state_dict(logger.best_model_state)
-            #     g.eval()
+            if key not in best_results or current_loss < best_results[key]['loss']:
+                # recompute solution with best model
+                g.load_state_dict(logger.best_model_state)
+                g.eval()
 
-            #     meshgrid_flatten = setting["meshgrid_flatten"].to(device)
-            #     u0 = setting["u0"].to(device)
-            #     h = setting["h"].to(device)
+                meshgrid_flatten = setting["meshgrid_flatten"].to(device)
+                u0 = setting["u0"].to(device)
+                h = setting["h"].to(device)
 
-            #     g_eval = g(meshgrid_flatten).reshape(setting["tt"].shape)
-            #     u = PDEsolver(u0, g_eval, setting["gamma"], setting["epsilon"], setting["dt"], setting["dx"], setting["dy"], setting["nt"], setting["nx"], setting["ny"], device=device)
-            #     rhs = u - h
-            #     uhatT = torch.zeros((setting["nx"], setting["ny"]), device=device)
-            #     uhat = adjoint_PDEsolver(uhatT, u, rhs, setting["gamma"], setting["epsilon"], setting["T"], setting["dt"], setting["dx"], setting["dy"], setting["nt"], setting["nx"], setting["ny"], device=device)
+                g_eval = g(meshgrid_flatten).reshape(setting["tt"].shape)
+                u = PDEsolver(u0, g_eval, setting["gamma"], setting["epsilon"], setting["dt"], setting["dx"], setting["dy"], setting["nt"], setting["nx"], setting["ny"], device=device)
+                rhs = u - h
+                uhatT = torch.zeros((setting["nx"], setting["ny"]), device=device)
+                uhat = adjoint_PDEsolver(uhatT, u, rhs, setting["gamma"], setting["epsilon"], setting["T"], setting["dt"], setting["dx"], setting["dy"], setting["nt"], setting["nx"], setting["ny"], device=device)
 
-            #     best_results[key] = {
-            #         'loss': current_loss,
-            #         'g_state_dict': g.state_dict(),
-            #         'u': u,
-            #         'uhat': uhat
-            #     }
+                best_results[key] = {
+                    'loss': current_loss,
+                    'g_state_dict': g.state_dict(),
+                    'u': u,
+                    'uhat': uhat
+                }
 
-            #     torch.save(g.state_dict(), os.path.join('results', runnumber, f'best_g_beta{beta_}_N{N_}.pt'))
-            #     torch.save({'u': u, 'uhat': uhat}, os.path.join('results', runnumber, f'best_solution_beta{beta_}_N{N_}.pt'))
+                torch.save(g.state_dict(), os.path.join('results', runnumber, f'best_g_beta{beta_}_N{N_}.pt'))
+                torch.save({'u': u, 'uhat': uhat}, os.path.join('results', runnumber, f'best_solution_beta{beta_}_N{N_}.pt'))
 
-            # # save the last model state together with the logger, optimizer and scheduler state
-            # torch.save({
-            #     'g_state_dict': g.state_dict(),
-            #     'logger': logger,
-            #     'optimizer_state_dict': optimizer.state_dict(),
-            #     'scheduler_state_dict': scheduler.state_dict()
-            # }, os.path.join('results', runnumber, f'last_model_beta{beta_}_N{N_}_run{i}.pt'))
+            # save the last model state together with the logger, optimizer and scheduler state
+            torch.save({
+                'g_state_dict': g.state_dict(),
+                'logger': logger,
+                'optimizer_state_dict': optimizer.state_dict(),
+                'scheduler_state_dict': scheduler.state_dict()
+            }, os.path.join('results', runnumber, f'last_model_beta{beta_}_N{N_}_run{i}.pt'))
 
 
             ## baseline training
